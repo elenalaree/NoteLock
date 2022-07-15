@@ -60,14 +60,14 @@ app.post('/api/notes', (req, res) => {
 
 //connecting html pages
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/index'));
+    res.sendFile(path.join(__dirname, './public/index.html'));
 });
 //get html notes
 app.get('/notes', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/notes'));
+    res.sendFile(path.join(__dirname, './public/notes.html'));
 });
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/index'));
+    res.sendFile(path.join(__dirname, './public/index.html'));
 });
 app.listen(PORT, () => {
     console.log(`API server is now on port ${PORT}`);
