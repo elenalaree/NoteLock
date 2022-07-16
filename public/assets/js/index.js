@@ -122,6 +122,7 @@ const renderNoteList = async (notes) => {
   
   let jsonNotes = await notes.json();
   if (window.location.pathname === '/notes.html') {
+    
     noteList.forEach((el) => (el.innerHTML = ''));
   }
 
