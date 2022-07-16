@@ -43,9 +43,6 @@ app.get('/api/notes/:id', (req, res) => {
     }
 });
 
-// app.get('/api/notes', (req, res) => {
-    
-// })
 
 app.post('/api/notes', (req, res) => {
     // req.body is where our incoming content will be
@@ -56,7 +53,7 @@ app.post('/api/notes', (req, res) => {
     res.json(note);
 });
 
-
+// app.delete('/api/notes', (req))
 
 //connecting html pages
 app.get('/', (req, res) => {
