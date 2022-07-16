@@ -18,12 +18,12 @@ app.use(express.static('public'));
 
 
 
-function createNewNote(body, notesArr) {
+function createNewNote(body, notes) {
     const note = body;
-    notesArr.push(note);
+    notes.push(note);
     fs.writeFileSync(
         path.join(__dirname, './data/notes.json'),
-        JSON.stringify({notesArr}, null, 2)
+        JSON.stringify({notes}, null, 2)
       );
     return note;
 }
