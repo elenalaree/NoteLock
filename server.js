@@ -1,37 +1,73 @@
-const express = require('express');
+
+const express = require('express'); 
 const fs = require('fs');
+const path = require('path'); 
+const app = express(); 
+//const uuid = require("./helpers/uuid"); 
+const PORT = process.env.PORT || 3000; 
+const {notes} = require('./data/notes.json');
 
-const path = require('path');
-
-const PORT = process.env.PORT || 3000;
-const app = express();
-
-const { notes } = require('./data/notes.json');
-
-// parse incoming string or array data
+// these 3 needed to pick up for the website 
 app.use(express.urlencoded({ extended: true }));
-// parse incoming JSON data
 app.use(express.json());
-//connect public
-app.use(express.static('public'));
-
-
-
-function createNewNote(body, notesArr) {
-    const note = body;
-    notesArr.push(note);
-    fs.writeFileSync(
-        path.join(__dirname, './data/notes.json'),
-        JSON.stringify({notes: notesArr}, null, 2)
-      );
-    return note;
+app.use(express.static ('public'));
+////
+function filterByQuery(query, notesArray) {
+    let bodyArray = []; 
+    let noteResults = notesArray;
+    if (query.title) {
+        if (typeof query.title === 'string') {
+            bodyArray = [query.title];
+        } else {
+            bodyArray = query.title;
+        }
+        bodyArray.forEach(noteTitle => {
+            noteResults = noteResults.filter(
+                note => note.title.indexOf(noteTitle) !== -1
+            );
+        });
+    }
+    return noteResults; 
 }
 
-//get notes and show results
+function findById(id, notesArray) {
+    const result = notesArray.filter(note => note.id === id)[0];
+    return result; 
+}
+
+function createNewNote(body, notesArray) {
+    const note = body;
+    notesArray.push(note);
+    fs.writeFileSync(
+        path.join(__dirname, './data/notes.json'), 
+        JSON.stringify({ notes: notesArray}, null, 2)
+    );
+    // function here 
+    return note; 
+}
+
+function validateNote(note) {
+    if(!note.title || typeof note.title !== 'string' ) {
+        return false;
+    }
+    if(!note.text || typeof note.text !== 'string') {
+        return false; 
+    }
+    return true; 
+}
+
+// API routes
 app.get('/api/notes', (req, res) => {
-    res.json(notes);
+    let results = notes;
+    if (req.query) {
+        results = filterByQuery(req.query, results);
+    } 
+    res.json(results);
+    console.info(`${req.method} request received for notes`)
+    // tst res.json(notes)
 });
 
+// get request for the new note 
 app.get('/api/notes/:id', (req, res) => {
     const result = findById(req.params.id, notes);
     if (result) {
@@ -43,30 +79,28 @@ app.get('/api/notes/:id', (req, res) => {
     }
 });
 
-
 app.post('/api/notes', (req, res) => {
-    // req.body is where our incoming content will be
-    console.log(req.body);
     req.body.id = notes.length.toString();
-
-    const note = createNewNote(req.body, notes)
-    res.json(note);
+    // validation or whatnot
+    if(!validateNote(req.body)) {
+        res.status(400).send('The note is not properly formatted');
+    } else {
+        const note = createNewNote(req.body, notes);
+    res.json(note);  
+    console.log(note); 
+    console.info(`${req.method} request received for notes`)
+    }
 });
 
-// app.delete('/api/notes', (req))
-
-//connecting html pages
-app.get('/', (req, res) => {
+// HTML routes
+app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, './public/index.html'));
 });
-//get html notes
-app.get('/notes', (req, res) => {
+app.get('/notes', function(req, res) {
     res.sendFile(path.join(__dirname, './public/notes.html'));
 });
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/index.html'));
-});
-app.listen(PORT, () => {
-    console.log(`API server is now on port ${PORT}`);
-});
+app.get('*', (req,res) => {
+    res.sendFile(path.join(__dirname, './public/index.html')); 
+})
 
+app.listen(PORT, () => console.log(`server started on port ${PORT}`)); 
