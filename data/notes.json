@@ -1,29 +1,8 @@
 {
-  "notes": [
-    {
-      "title": "Hello",
-      "text": "What is up",
-      "id": "0"
-    },
-    {
-      "title": "Bueno",
-      "text": "Nochas",
-      "id": "1"
-    },
-    {
-      "title": "Hello",
-      "text": "Blahblah",
-      "id": "2"
-    },
-    {
-      "title": "No",
-      "text": "Blahbldfah",
-      "id": "3"
-    },
-    {
-      "title": "Note",
-      "text": "Lala",
-      "id": "4"
-    }
-  ]
+    "notes": [
+        {
+            "title": "wow",
+            "text": "why?"
+        }
+    ]
 }

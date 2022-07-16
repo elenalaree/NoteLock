@@ -1,73 +1,38 @@
-
-const express = require('express'); 
+const express = require('express');
 const fs = require('fs');
-const path = require('path'); 
-const app = express(); 
-//const uuid = require("./helpers/uuid"); 
-const PORT = process.env.PORT || 3000; 
-const {notes} = require('./data/notes.json');
 
-// these 3 needed to pick up for the website 
+const path = require('path');
+
+const PORT = process.env.PORT || 3000;
+const app = express();
+const {v4: uuidv4 } = require('uuid');
+
+const { notes } = require('./data/notes.json');
+
+// parse incoming string or array data
 app.use(express.urlencoded({ extended: true }));
+// parse incoming JSON data
 app.use(express.json());
-app.use(express.static ('public'));
-////
-function filterByQuery(query, notesArray) {
-    let bodyArray = []; 
-    let noteResults = notesArray;
-    if (query.title) {
-        if (typeof query.title === 'string') {
-            bodyArray = [query.title];
-        } else {
-            bodyArray = query.title;
-        }
-        bodyArray.forEach(noteTitle => {
-            noteResults = noteResults.filter(
-                note => note.title.indexOf(noteTitle) !== -1
-            );
-        });
-    }
-    return noteResults; 
-}
+//connect public
+app.use(express.static('public'));
 
-function findById(id, notesArray) {
-    const result = notesArray.filter(note => note.id === id)[0];
-    return result; 
-}
 
-function createNewNote(body, notesArray) {
+
+function createNewNote(body, notesArr) {
     const note = body;
-    notesArray.push(note);
+    notesArr.push(note);
     fs.writeFileSync(
-        path.join(__dirname, './data/notes.json'), 
-        JSON.stringify({ notes: notesArray}, null, 2)
-    );
-    // function here 
-    return note; 
+        path.join(__dirname, './data/notes.json'),
+        JSON.stringify({notes: notesArr}, null, 2)
+      );
+    return note;
 }
 
-function validateNote(note) {
-    if(!note.title || typeof note.title !== 'string' ) {
-        return false;
-    }
-    if(!note.text || typeof note.text !== 'string') {
-        return false; 
-    }
-    return true; 
-}
-
-// API routes
+//get notes and show results
 app.get('/api/notes', (req, res) => {
-    let results = notes;
-    if (req.query) {
-        results = filterByQuery(req.query, results);
-    } 
-    res.json(results);
-    console.info(`${req.method} request received for notes`)
-    // tst res.json(notes)
+    res.json(notes);
 });
 
-// get request for the new note 
 app.get('/api/notes/:id', (req, res) => {
     const result = findById(req.params.id, notes);
     if (result) {
@@ -79,28 +44,40 @@ app.get('/api/notes/:id', (req, res) => {
     }
 });
 
+
 app.post('/api/notes', (req, res) => {
-    req.body.id = notes.length.toString();
-    // validation or whatnot
-    if(!validateNote(req.body)) {
-        res.status(400).send('The note is not properly formatted');
-    } else {
-        const note = createNewNote(req.body, notes);
-    res.json(note);  
-    console.log(note); 
-    console.info(`${req.method} request received for notes`)
-    }
+    // req.body is where our incoming content will be
+    console.log(req.body);
+    req.body.id = uuidv4();
+
+    const note = createNewNote(req.body, notes)
+    res.json(note);
 });
 
-// HTML routes
-app.get('/', function(req, res) {
+// app.delete('/api/notes/:id', (req, res) => {
+//     notes.forEach((note, i) => {
+//         if (note.id === req.params.id){
+//             notes.splice(i, 1)
+//         }
+//     });
+//     fs.writeFile('./data/notes.json', JSON.stringify(notes), (err) => {
+//         if (err) throw err;
+//     });
+//     res.send(notes);
+// });
+
+//connecting html pages
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, './public/index.html'));
 });
-app.get('/notes', function(req, res) {
+//get html notes
+app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, './public/notes.html'));
 });
-app.get('*', (req,res) => {
-    res.sendFile(path.join(__dirname, './public/index.html')); 
-})
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/index.html'));
+});
+app.listen(PORT, () => {
+    console.log(`API server is now on port ${PORT}`);
+});
 
-app.listen(PORT, () => console.log(`server started on port ${PORT}`)); 
