@@ -23,7 +23,7 @@ function createNewNote(body, notesArr) {
     notesArr.push(note);
     fs.writeFileSync(
         path.join(__dirname, './data/notes.json'),
-        JSON.stringify({notes: notesArr}, null, 2)
+        JSON.stringify({notesArr}, null, 2)
       );
     return note;
 }
@@ -47,24 +47,25 @@ app.get('/api/notes/:id', (req, res) => {
 
 app.post('/api/notes', (req, res) => {
     // req.body is where our incoming content will be
-    console.log(req.body);
+
     req.body.id = uuidv4();
 
     const note = createNewNote(req.body, notes)
     res.json(note);
 });
 
-// app.delete('/api/notes/:id', (req, res) => {
-//     notes.forEach((note, i) => {
-//         if (note.id === req.params.id){
-//             notes.splice(i, 1)
-//         }
-//     });
-//     fs.writeFile('./data/notes.json', JSON.stringify(notes), (err) => {
-//         if (err) throw err;
-//     });
-//     res.send(notes);
-// });
+app.delete('/api/notes/:id', (req, res) => {
+    notes.forEach((note, i) => {
+        if (note.id === req.params.id){
+            notes.splice(i, 1);
+            console.log(notes);
+        }
+    });
+    fs.writeFile('./data/notes.json', JSON.stringify({notes}), (err) => {
+        if (err) throw err;
+    });
+    res.send(notes);
+});
 
 //connecting html pages
 app.get('/', (req, res) => {
